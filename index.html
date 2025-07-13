@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI HR Interview Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6c63ff;
+            --secondary-color: #f8f9fa;
+            --accent-color: #5a52d9;
+            --text-color: #2d3748;
+            --light-color: #ffffff;
+            --dark-color: #1a202c;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .card {
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border: none;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            border-radius: 16px 16px 0 0 !important;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 1.5rem;
+        }
+        
+        .ai-message {
+            background-color: #f0f4f8;
+            border-radius: 18px 18px 18px 4px;
+            max-width: 85%;
+            padding: 1rem 1.25rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .user-message {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 18px 18px 4px 18px;
+            max-width: 85%;
+            margin-left: auto;
+            padding: 1rem 1.25rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .interview-container {
+            height: 60vh;
+            overflow-y: auto;
+            background-color: var(--light-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.03);
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) #f1f1f1;
+        }
+        
+        .interview-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .interview-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .interview-container::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 10px;
+        }
+        
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+            background-color: var(--primary-color);
+        }
+        
+        #camera-feed {
+            width: 100%;
+            height: auto;
+            background-color: #f0f0f0;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .warning-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: none;
+        }
+        
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .typing-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            margin-right: 4px;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+        
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
+        }
+        
+        .form-control {
+            border-radius: 12px;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(108, 99, 255, 0.25);
+        }
+        
+        .badge {
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .hr-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            background-color: var(--light-color);
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: bold;
+            border: 2px solid var(--primary-color);
+            flex-shrink: 0;
+            font-size: 1.1rem;
+        }
+        
+        .interview-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            z-index: -1;
+        }
+        
+        #voice-btn.listening {
+            animation: pulse 1.5s infinite;
+            position: relative;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(108, 99, 255, 0.7); }
+            70% { box-shadow: 0 0 0 12px rgba(108, 99, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(108, 99, 255, 0); }
+        }
+        
+        .difficulty-easy {
+            background-color: #38a169;
+        }
+        
+        .difficulty-medium {
+            background-color: #dd6b20;
+        }
+        
+        .difficulty-hard {
+            background-color: #e53e3e;
+        }
+        
+        .type-technical {
+            background-color: #4299e1;
+        }
+        
+        .type-scenario {
+            background-color: #9f7aea;
+        }
+        
+        .type-behavioral {
+            background-color: #ed64a6;
+        }
+        
+        .voice-btn-container {
+            position: relative;
+        }
+        
+        .voice-wave {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            opacity: 0;
+            background: rgba(108, 99, 255, 0.2);
+            transition: opacity 0.3s ease;
+        }
+        
+        #voice-btn.listening .voice-wave {
+            opacity: 1;
+        }
+        
+        .intro-animation {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        /* Add to your existing styles */
+#text-fallback-input {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+#text-fallback-submit {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.voice-fallback {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+    </style>
+</head>
+<body>
+    <div class="interview-background"></div>
+    
+    <div class="container py-5 intro-animation">
+        <!-- Warning Alert for Cheating Detection -->
+        <div class="warning-alert alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>Warning!</strong> <span id="warning-message">Please focus on the interview.</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Registration Form -->
+        <div id="registration-section" class="card shadow">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="bi bi-people-fill me-2"></i>AI HR Interview Platform</h3>
+            </div>
+            <div class="card-body">
+                <form id="registration-form">
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                    </div>
+            <div class="mb-3">
+    <label for="role" class="form-label">Position Applying For</label>
+    <select class="form-select" id="role" required>
+        <option value="">Select position</option>
+        <option value="Frontend Developer">Frontend Developer</option>
+        <option value="Backend Developer">Backend Developer</option>
+        <option value="Full Stack Developer">Full Stack Developer</option>
+        <option value="Data Scientist">Data Scientist</option>
+        <option value="DevOps Engineer">DevOps Engineer</option>
+        <option value="Product Manager">Product Manager</option>
+        <option value="UX/UI Designer">UX/UI Designer</option>
+        <option value="QA Engineer">QA Engineer</option>
+        <option value="Mobile Developer">Mobile Developer</option>
+        <option value="Systems Architect">Systems Architect</option>
+        <option value="Cloud Engineer">Cloud Engineer</option>
+        <option value="Machine Learning Engineer">Machine Learning Engineer</option>
+        <option value="Database Administrator">Database Administrator</option>
+        <option value="Security Engineer">Security Engineer</option>
+        <option value="Technical Writer">Technical Writer</option>
+        <option value="Scrum Master">Scrum Master</option>
+        <option value="Business Analyst">Business Analyst</option>
+        <option value="Project Manager">Project Manager</option>
+        <option value="IT Support Specialist">IT Support Specialist</option>
+        <option value="Network Engineer">Network Engineer</option>
+        <option value="Data Engineer">Data Engineer</option>
+        <option value="AI Research Scientist">AI Research Scientist</option>
+    </select>
+</div>
+                    <div class="mb-3">
+                        <label for="experience" class="form-label">Years of Experience</label>
+                        <select class="form-select" id="experience" required>
+                            <option value="">Select experience</option>
+                            <option value="0-1 years">0-1 years</option>
+                            <option value="1-3 years">1-3 years</option>
+                            <option value="3-5 years">3-5 years</option>
+                            <option value="5+ years">5+ years</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="question-count" class="form-label">Interview Duration</label>
+                        <select class="form-select" id="question-count" required>
+                            <option value="5">Short (5 questions)</option>
+                            <option value="10">Standard (10 questions)</option>
+                            <option value="15">Comprehensive (15 questions)</option>
+                                  <option value="25">Comprehensive (25 questions)</option>
+                                        <option value="50">Comprehensive (50 questions)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="consent" required>
+                        <label class="form-check-label" for="consent">I consent to this interview being recorded</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <span id="submit-text">Begin Interview</span>
+                        <span id="submit-loading" style="display: none;">
+                            <span class="loading-spinner"></span> Preparing Interview...
+                        </span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Interview Section -->
+        <div id="interview-section" class="card shadow mt-4" style="display: none;">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="mb-0"><i class="bi bi-chat-square-text-fill me-2"></i>AI HR Interview</h3>
+                    <small class="text-white-50">Conducted by: <span id="hr-name">Priya Sharma</span></small>
+                </div>
+                <div>
+                    <span id="timer" class="badge bg-light text-dark">00:00</span>
+                    <button id="end-interview-btn" class="btn btn-sm btn-light ms-2">End Interview</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8 mb-4 mb-md-0">
+                        <div class="interview-container mb-3">
+                            <div id="chat-messages">
+                                <!-- Messages will appear here -->
+                            </div>
+                        </div>
+                 <div class="voice-btn-container">
+                    <button id="voice-btn" class="btn btn-primary w-100">
+                              <i class="bi bi-mic-fill me-2"></i> Click to Speak
+                   </button>
+                 </div>
+                <div id="voice-status" class="text-center mt-2 text-muted small">
+                        Click the button and start speaking
+                </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card mb-3">
+                            <div class="card-header bg-white text-dark">
+                                <h5 class="mb-0"><i class="bi bi-camera-video-fill me-2"></i>Video Feed</h5>
+                            </div>
+                            <div class="card-body p-2">
+                                <video id="camera-feed" autoplay playsinline></video>
+                                <div class="form-text text-center mt-2">Please ensure your face is visible</div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header bg-white text-dark">
+                                <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Interview Progress</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="progress mb-3" style="height: 12px;">
+                                    <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                                </div>
+                                <div id="question-counter" class="text-center small">Question 0 of 0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results-section" class="card shadow mt-4" style="display: none;">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="bi bi-clipboard-data-fill me-2"></i>Interview Results</h3>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-4 mb-md-0">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h5 class="mb-0">Candidate Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <th>Name</th>
+                                        <td id="result-name">-</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Email</th>
+                                        <td id="result-email">-</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Position</th>
+                                        <td id="result-role">-</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Experience</th>
+                                        <td id="result-experience">-</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h5 class="mb-0">Interview Summary</h5>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <th>Total Questions</th>
+                                        <td id="total-questions">0</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Performance Score</th>
+                                        <td id="overall-score">0%</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Duration</th>
+                                        <td id="interview-duration">00:00</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h4 class="mb-3"><i class="bi bi-chat-square-text-fill me-2"></i>Detailed Feedback</h4>
+                <div id="detailed-feedback" class="mb-4">
+                    <!-- Feedback will appear here -->
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-star-fill me-2"></i>Overall Assessment</h5>
+                    </div>
+                    <div class="card-body">
+                        <p id="overall-assessment" class="mb-0">Assessment will appear here</p>
+                    </div>
+                </div>
+                
+                <button id="download-report" class="btn btn-primary w-100 mt-4">
+                    <i class="bi bi-download me-2"></i> Download Full Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

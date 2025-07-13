@@ -51,30 +51,42 @@ function init() {
     loadVoices();
 }
 
-// Load voices for text-to-speech
+
 function loadVoices() {
-    // This is needed for some browsers to populate voices
-    window.speechSynthesis.onvoiceschanged = function() {
-        const voices = window.speechSynthesis.getVoices();
-        interviewState.femaleVoice = voices.find(voice => 
-            voice.name.includes('Female') || 
-            voice.name.includes('Woman') ||
-            voice.lang.includes('en-IN') ||
-            voice.name.toLowerCase().includes('priya') ||
-            voice.name.toLowerCase().includes('neha')
-        );
-    };
-    
-    // Some browsers don't support onvoiceschanged
-    const voices = window.speechSynthesis.getVoices();
-    interviewState.femaleVoice = voices.find(voice => 
-        voice.name.includes('Female') || 
+    return new Promise((resolve) => {
+        let voices = window.speechSynthesis.getVoices();
+
+        if (voices.length !== 0) {
+            // Voices already loaded
+            setFemaleVoice(voices);
+            resolve();
+        } else {
+            // Voices not yet loaded, set interval to wait
+            const interval = setInterval(() => {
+                voices = window.speechSynthesis.getVoices();
+                if (voices.length !== 0) {
+                    setFemaleVoice(voices);
+                    clearInterval(interval);
+                    resolve();
+                }
+            }, 100); // Check every 100ms
+        }
+    });
+}
+
+function setFemaleVoice(voices) {
+    interviewState.femaleVoice = voices.find(voice =>
+        voice.name.includes('Female') ||
         voice.name.includes('Woman') ||
         voice.lang.includes('en-IN') ||
         voice.name.toLowerCase().includes('priya') ||
         voice.name.toLowerCase().includes('neha')
     );
 }
+
+
+
+
 
 // Set up event listeners
 function setupEventListeners() {
@@ -735,8 +747,8 @@ function speak(text) {
         }
         
         // Configure voice properties
-        utterance.rate = 1.1;
-        utterance.pitch = 1.1;
+        utterance.rate = 1.3;
+        utterance.pitch = 1.6;
         utterance.volume = 1;
         
         window.speechSynthesis.speak(utterance);
